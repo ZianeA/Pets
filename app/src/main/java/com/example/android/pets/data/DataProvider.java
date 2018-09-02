@@ -7,7 +7,7 @@ import java.util.List;
 
 public final class DataProvider {
 
-    public static final List<Pet> pets;
+    public static List<Pet> pets;
 
     static  {
         pets = new ArrayList<>(4);

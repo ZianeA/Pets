@@ -7,6 +7,8 @@
     <string name="gender">Gender</string>
     <string name="measurement">Measurement</string>
     <string name="weight_unit_kg">kg</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
 
     <string-array name="pet_gender">
         <item>Male</item>

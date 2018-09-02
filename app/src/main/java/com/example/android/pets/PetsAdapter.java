@@ -58,11 +58,11 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
 
         @Override
         public void onClick(View view) {
-            mClickListener.onClick(view, mData.get(getLayoutPosition()));
+            mClickListener.onClick(view, getLayoutPosition());
         }
     }
 
     public interface OnPetListItemClickListener {
-        public void onClick(View view, Pet pet);
+        public void onClick(View view, int petIndex);
     }
 }

@@ -16,7 +16,10 @@ import com.example.android.pets.data.DataProvider;
 public class CatalogActivity extends AppCompatActivity {
 
     private static final String TAG = CatalogActivity.class.getSimpleName();
-    public static final String SELECTED_PET_KEY = "SELECTED_PET";
+    public static final String EXTRA_PET_INDEX = "SELECTED_PET_INDEX";
+    private static final int EDIT_PET_REQUEST_CODE = 0;
+    private PetsAdapter mAdapter;
+    private int mSelectedPetIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,22 +39,30 @@ public class CatalogActivity extends AppCompatActivity {
         RecyclerView mRecyclerView = findViewById(R.id.rv_pets);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(new PetsAdapter(DataProvider.pets,
-                new PetsAdapter.OnPetListItemClickListener() {
+        mAdapter = new PetsAdapter(DataProvider.pets, new PetsAdapter.OnPetListItemClickListener() {
             @Override
-            public void onClick(View view, Pet pet) {
-                editPet(pet);
+            public void onClick(View view, int petIndex) {
+                mSelectedPetIndex = petIndex;
+                editPet();
             }
-        }));
+        });
+        mRecyclerView.setAdapter(mAdapter);
     }
 
-    private void editPet(Pet pet) {
+    private void editPet() {
         Intent intent = new Intent(this, EditorActivity.class);
-        intent.putExtra(SELECTED_PET_KEY, pet);
-        startActivity(intent);
+        intent.putExtra(EXTRA_PET_INDEX, mSelectedPetIndex);
+        startActivityForResult(intent, EDIT_PET_REQUEST_CODE);
     }
 
-    private void addPet(){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == EDIT_PET_REQUEST_CODE && resultCode == RESULT_OK) {
+            mAdapter.notifyItemChanged(mSelectedPetIndex);
+        }
+    }
+
+    private void addPet() {
         startActivity(new Intent(this, EditorActivity.class));
     }
 
