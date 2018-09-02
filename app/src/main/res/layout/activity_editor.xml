@@ -59,16 +59,17 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:fontFamily="sans-serif"
-        app:layout_constraintBottom_toTopOf="@+id/et_gender"
+        app:layout_constraintBottom_toTopOf="@+id/spinner_gender"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/et_gender" />
+        app:layout_constraintTop_toBottomOf="@+id/spinner_gender" />
 
     <Spinner
-        android:id="@+id/et_gender"
+        android:id="@+id/spinner_gender"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ems="10"
+        android:entries="@array/pet_gender"
         android:inputType="textPersonName"
         app:layout_constraintStart_toStartOf="@+id/et_breed"
         app:layout_constraintTop_toBottomOf="@+id/et_breed" />
@@ -81,8 +82,8 @@
         android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/et_gender"
-        app:layout_constraintTop_toBottomOf="@+id/et_gender">
+        app:layout_constraintStart_toStartOf="@+id/spinner_gender"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_gender">
 
         <EditText
             android:id="@+id/et_measurement"

@@ -18,6 +18,7 @@ import com.example.android.pets.data.DataProvider;
 public class CatalogActivity extends AppCompatActivity {
 
     private static final String TAG = CatalogActivity.class.getSimpleName();
+    public static final String SELECTED_PET_KEY = "SELECTED_PET";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,16 +39,18 @@ public class CatalogActivity extends AppCompatActivity {
         RecyclerView mRecyclerView = findViewById(R.id.rv_pets);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(new PetsAdapter(DataProvider.pets, new View.OnClickListener() {
+        mRecyclerView.setAdapter(new PetsAdapter(DataProvider.pets,
+                new PetsAdapter.OnPetListItemClickListener() {
             @Override
-            public void onClick(View view) {
-               navigateToEditor();
+            public void onClick(View view, Pet pet) {
+                navigateToEditor(pet);
             }
         }));
     }
 
-    private void navigateToEditor() {
+    private void navigateToEditor(Pet pet) {
         Intent intent = new Intent(this, EditorActivity.class);
+        intent.putExtra(SELECTED_PET_KEY, pet);
         startActivity(intent);
     }
 

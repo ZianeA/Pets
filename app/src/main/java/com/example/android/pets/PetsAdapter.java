@@ -12,9 +12,9 @@ import java.util.List;
 public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterViewHolder> {
 
     private List<Pet> mData;
-    private View.OnClickListener mClickListener;
+    private OnPetListItemClickListener mClickListener;
 
-    public PetsAdapter(List<Pet> data, View.OnClickListener clickListener) {
+    public PetsAdapter(List<Pet> data, OnPetListItemClickListener clickListener) {
         mData = data;
         mClickListener = clickListener;
     }
@@ -38,7 +38,8 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
         return mData != null ? mData.size() : 0;
     }
 
-    public class PetsAdapterViewHolder extends RecyclerView.ViewHolder {
+    public class PetsAdapterViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
 
         private TextView mName;
         private TextView mBreed;
@@ -47,12 +48,21 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
             super(itemView);
             mName = itemView.findViewById(R.id.tv_name);
             mBreed = itemView.findViewById(R.id.tv_breed);
-            itemView.setOnClickListener(mClickListener);
+            itemView.setOnClickListener(this);
         }
 
         private void bind(int position) {
             mName.setText(mData.get(position).getName());
             mBreed.setText(mData.get(position).getBreed());
         }
+
+        @Override
+        public void onClick(View view) {
+            mClickListener.onClick(view, mData.get(getLayoutPosition()));
+        }
+    }
+
+    public interface OnPetListItemClickListener {
+        public void onClick(View view, Pet pet);
     }
 }

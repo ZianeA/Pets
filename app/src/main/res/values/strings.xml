@@ -7,4 +7,10 @@
     <string name="gender">Gender</string>
     <string name="measurement">Measurement</string>
     <string name="weight_unit_kg">kg</string>
+
+    <string-array name="pet_gender">
+        <item>Male</item>
+        <item>Female</item>
+        <item>Unknown</item>
+    </string-array>
 </resources>
