@@ -1,5 +1,6 @@
 package com.example.android.pets;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -40,10 +41,14 @@ public class CatalogActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(new PetsAdapter(DataProvider.pets, new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(CatalogActivity.this,
-                        "show edit activity", Toast.LENGTH_SHORT).show();
+               navigateToEditor();
             }
         }));
+    }
+
+    private void navigateToEditor() {
+        Intent intent = new Intent(this, EditorActivity.class);
+        startActivity(intent);
     }
 
     @Override
