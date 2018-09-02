@@ -7,18 +7,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.android.pets.data.DataProvider;
 
 public class CatalogActivity extends AppCompatActivity {
 
     private static final String TAG = CatalogActivity.class.getSimpleName();
-
-    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +34,16 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
 
-        mRecyclerView = findViewById(R.id.rv_pets);
+        RecyclerView mRecyclerView = findViewById(R.id.rv_pets);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerView.setAdapter(new PetsAdapter(DataProvider.pets));
+        mRecyclerView.setAdapter(new PetsAdapter(DataProvider.pets, new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(CatalogActivity.this,
+                        "show edit activity", Toast.LENGTH_SHORT).show();
+            }
+        }));
     }
 
     @Override

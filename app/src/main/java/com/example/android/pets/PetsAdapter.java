@@ -7,16 +7,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
-public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterViewHolder>{
+public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterViewHolder> {
 
     private List<Pet> mData;
+    private View.OnClickListener mClickListener;
 
-    public PetsAdapter(List<Pet> data) {
+    public PetsAdapter(List<Pet> data, View.OnClickListener clickListener) {
         mData = data;
+        mClickListener = clickListener;
     }
 
     @NonNull
@@ -43,14 +43,14 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
         private TextView mName;
         private TextView mBreed;
 
-
         public PetsAdapterViewHolder(View itemView) {
             super(itemView);
             mName = itemView.findViewById(R.id.tv_name);
             mBreed = itemView.findViewById(R.id.tv_breed);
+            itemView.setOnClickListener(mClickListener);
         }
 
-        private void bind(int position){
+        private void bind(int position) {
             mName.setText(mData.get(position).getName());
             mBreed.setText(mData.get(position).getBreed());
         }
