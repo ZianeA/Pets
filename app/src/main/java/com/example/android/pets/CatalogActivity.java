@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +19,7 @@ public class CatalogActivity extends AppCompatActivity {
     private static final String TAG = CatalogActivity.class.getSimpleName();
     public static final String EXTRA_PET_INDEX = "SELECTED_PET_INDEX";
     private static final int EDIT_PET_REQUEST_CODE = 0;
+    private static final int ADD_PET_REQUEST_CODE = 1;
     private PetsAdapter mAdapter;
     private int mSelectedPetIndex;
 
@@ -57,13 +59,20 @@ public class CatalogActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == EDIT_PET_REQUEST_CODE && resultCode == RESULT_OK) {
-            mAdapter.notifyItemChanged(mSelectedPetIndex);
+        if (resultCode == RESULT_OK) {
+            if (requestCode == EDIT_PET_REQUEST_CODE) {
+                mAdapter.notifyItemChanged(mSelectedPetIndex);
+            } else if (requestCode == ADD_PET_REQUEST_CODE) {
+                int lastItemIndex = mAdapter.getItemCount() - 1;
+                mAdapter.notifyItemInserted(lastItemIndex);
+            }
         }
+
     }
 
     private void addPet() {
-        startActivity(new Intent(this, EditorActivity.class));
+        Intent intent = new Intent(this, EditorActivity.class);
+        startActivityForResult(intent, ADD_PET_REQUEST_CODE);
     }
 
     @Override

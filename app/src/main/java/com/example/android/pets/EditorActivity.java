@@ -19,7 +19,6 @@ public class EditorActivity extends AppCompatActivity {
     private static final String EDIT_PET_TITLE = "Edit Pet";
     private static final int ACTION_DELETE_ID = 405;
     private boolean isAddPet;
-    private Pet mUpdatedPet;
     private int mSelectedPetIndex;
     private EditText mNameEditText;
     private EditText mBreedEditText;
@@ -44,19 +43,26 @@ public class EditorActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         if (intent.hasExtra(CatalogActivity.EXTRA_PET_INDEX)) {
-            setTitle(EDIT_PET_TITLE);
-            mSelectedPetIndex = getIntent().
-                    getIntExtra(CatalogActivity.EXTRA_PET_INDEX, 0);
-            Pet selectedPet = DataProvider.pets.get(mSelectedPetIndex);
-            mNameEditText.setText(selectedPet.getName());
-            mBreedEditText.setText(selectedPet.getBreed());
-            mWeightEditText.setText(String.valueOf(selectedPet.getWeight()));
-            mGenderSpinner.setSelection(selectedPet.getGender());
-
+            editPet();
         } else {
-            isAddPet = true;
-            setTitle(ADD_PET_TITLE);
+            addPet();
         }
+    }
+
+    private void addPet() {
+        isAddPet = true;
+        setTitle(ADD_PET_TITLE);
+    }
+
+    private void editPet() {
+        setTitle(EDIT_PET_TITLE);
+        mSelectedPetIndex = getIntent().
+                getIntExtra(CatalogActivity.EXTRA_PET_INDEX, 0);
+        Pet selectedPet = DataProvider.pets.get(mSelectedPetIndex);
+        mNameEditText.setText(selectedPet.getName());
+        mBreedEditText.setText(selectedPet.getBreed());
+        mWeightEditText.setText(String.valueOf(selectedPet.getWeight()));
+        mGenderSpinner.setSelection(selectedPet.getGender());
     }
 
     @Override
@@ -81,7 +87,7 @@ public class EditorActivity extends AppCompatActivity {
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
             case R.id.action_save:
-                saveChanges();
+                savePet();
                 setResult(RESULT_OK);
                 finish();
                 return true;
@@ -89,12 +95,16 @@ public class EditorActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void saveChanges() {
-        mUpdatedPet = new Pet();
-        mUpdatedPet.setName(mNameEditText.getText().toString());
-        mUpdatedPet.setBreed(mBreedEditText.getText().toString());
-        mUpdatedPet.setGender(mGenderSpinner.getSelectedItemPosition());
-        mUpdatedPet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
-        DataProvider.pets.set(mSelectedPetIndex, mUpdatedPet);
+    private void savePet() {
+        Pet pet = new Pet();
+        pet.setName(mNameEditText.getText().toString());
+        pet.setBreed(mBreedEditText.getText().toString());
+        pet.setGender(mGenderSpinner.getSelectedItemPosition());
+        pet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
+        if(isAddPet){
+            DataProvider.pets.add(pet);
+        } else {
+            DataProvider.pets.set(mSelectedPetIndex, pet);
+        }
     }
 }
