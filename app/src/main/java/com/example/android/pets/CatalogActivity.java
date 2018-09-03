@@ -1,6 +1,8 @@
 package com.example.android.pets;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.android.pets.data.DataProvider;
+import com.example.android.pets.data.PetContract;
 
 public class CatalogActivity extends AppCompatActivity {
 
@@ -51,6 +54,12 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
         mRecyclerView.setAdapter(mAdapter);
+
+        PetContract.PetDbHelper mDbHelper = new PetContract.PetDbHelper(this);
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + PetContract.PetsEntry.TABLE_NAME,
+                null);
+        Log.d(TAG, "onCreate: " + cursor.getCount());
     }
 
     private void editPet() {
