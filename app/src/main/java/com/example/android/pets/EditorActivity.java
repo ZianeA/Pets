@@ -14,10 +14,12 @@ import com.example.android.pets.data.DataProvider;
 
 public class EditorActivity extends AppCompatActivity {
 
+    public static final int RESULT_DELETE_PET = 405;
+
     private static final String TAG = EditorActivity.class.getSimpleName();
     private static final String ADD_PET_TITLE = "Add Pet";
     private static final String EDIT_PET_TITLE = "Edit Pet";
-    private static final int ACTION_DELETE_ID = 405;
+
     private boolean isAddPet;
     private int mSelectedPetIndex;
     private EditText mNameEditText;
@@ -91,8 +93,17 @@ public class EditorActivity extends AppCompatActivity {
                 setResult(RESULT_OK);
                 finish();
                 return true;
+            case R.id.action_delete:
+                deletePet();
+                setResult(RESULT_DELETE_PET);
+                finish();
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void deletePet() {
+        DataProvider.pets.remove(mSelectedPetIndex);
     }
 
     private void savePet() {
@@ -101,7 +112,8 @@ public class EditorActivity extends AppCompatActivity {
         pet.setBreed(mBreedEditText.getText().toString());
         pet.setGender(mGenderSpinner.getSelectedItemPosition());
         pet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
-        if(isAddPet){
+
+        if (isAddPet) {
             DataProvider.pets.add(pet);
         } else {
             DataProvider.pets.set(mSelectedPetIndex, pet);
