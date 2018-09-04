@@ -7,12 +7,36 @@ import android.support.annotation.IntDef;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class Pet {
+public class Pet implements Parcelable {
 
     private String name;
     private String breed;
     private int gender;
     private int weight;
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int i) {
+        out.writeString(name);
+        out.writeString(breed);
+        out.writeInt(gender);
+        out.writeInt(weight);
+    }
+
+    public static final Parcelable.Creator<Pet> CREATOR
+            = new Parcelable.Creator<Pet>() {
+        public Pet createFromParcel(Parcel in) {
+            return new Pet(in);
+        }
+
+        public Pet[] newArray(int size) {
+            return new Pet[size];
+        }
+    };
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({GENDER_MALE, GENDER_FEMALE, GENDER_UNKNOWN})
@@ -38,6 +62,13 @@ public class Pet {
 
     public Pet() {
 
+    }
+
+    public Pet(Parcel in){
+        name = in.readString();
+        breed = in.readString();
+        gender = in.readInt();
+        weight = in.readInt();
     }
 
     public String getName() {

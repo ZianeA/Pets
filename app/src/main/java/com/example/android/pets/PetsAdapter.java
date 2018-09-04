@@ -1,22 +1,26 @@
 package com.example.android.pets;
 
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.example.android.pets.data.PetContract;
+
 import java.util.List;
 
 public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterViewHolder> {
 
-    private List<Pet> mData;
+    private Cursor mData;
     private OnPetListItemClickListener mClickListener;
 
-    public PetsAdapter(List<Pet> data, OnPetListItemClickListener clickListener) {
-        mData = data;
-        mClickListener = clickListener;
+    public PetsAdapter(Cursor data, OnPetListItemClickListener clickListener) {
+        this.mData = data;
+        this.mClickListener = clickListener;
     }
 
     @NonNull
@@ -35,7 +39,7 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
 
     @Override
     public int getItemCount() {
-        return mData != null ? mData.size() : 0;
+        return mData != null ? mData.getCount() : 0;
     }
 
     public class PetsAdapterViewHolder extends RecyclerView.ViewHolder
@@ -52,8 +56,13 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
         }
 
         private void bind(int position) {
-            mName.setText(mData.get(position).getName());
-            mBreed.setText(mData.get(position).getBreed());
+            if (!mData.moveToPosition(position)) return;
+
+            int nameCol = mData.getColumnIndex(PetContract.PetsEntry.COLUMN_NAME_NAME);
+            int breedCol = mData.getColumnIndex(PetContract.PetsEntry.COLUMN_NAME_BREED);
+            mName.setText(mData.getString(nameCol));
+            mBreed.setText(mData.getString(breedCol));
+            int idCol = mData.getColumnIndex(PetContract.PetsEntry.COLUMN_NAME_ID);
         }
 
         @Override
@@ -64,5 +73,13 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
 
     public interface OnPetListItemClickListener {
         public void onClick(View view, int petIndex);
+    }
+
+    public void swapData(Cursor newData) {
+        if (mData != null) {
+            mData.close();
+        }
+
+        mData = newData;
     }
 }

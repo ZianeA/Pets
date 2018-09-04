@@ -44,7 +44,7 @@ public class EditorActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        if (intent.hasExtra(CatalogActivity.EXTRA_PET_INDEX)) {
+        if (intent.hasExtra(CatalogActivity.EXTRA_PET)) {
             editPet();
         } else {
             addPet();
@@ -58,9 +58,9 @@ public class EditorActivity extends AppCompatActivity {
 
     private void editPet() {
         setTitle(EDIT_PET_TITLE);
-        mSelectedPetIndex = getIntent().
-                getIntExtra(CatalogActivity.EXTRA_PET_INDEX, 0);
-        Pet selectedPet = DataProvider.pets.get(mSelectedPetIndex);
+        Pet selectedPet = getIntent().
+                getParcelableExtra(CatalogActivity.EXTRA_PET);
+
         mNameEditText.setText(selectedPet.getName());
         mBreedEditText.setText(selectedPet.getBreed());
         mWeightEditText.setText(String.valueOf(selectedPet.getWeight()));
@@ -90,8 +90,6 @@ public class EditorActivity extends AppCompatActivity {
                 return true;
             case R.id.action_save:
                 savePet();
-                setResult(RESULT_OK);
-                finish();
                 return true;
             case R.id.action_delete:
                 deletePet();
@@ -107,16 +105,15 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void savePet() {
-        Pet pet = new Pet();
-        pet.setName(mNameEditText.getText().toString());
-        pet.setBreed(mBreedEditText.getText().toString());
-        pet.setGender(mGenderSpinner.getSelectedItemPosition());
-        pet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
+        Pet newPet = new Pet();
+        newPet.setName(mNameEditText.getText().toString());
+        newPet.setBreed(mBreedEditText.getText().toString());
+        newPet.setGender(mGenderSpinner.getSelectedItemPosition());
+        newPet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
 
-        if (isAddPet) {
-            DataProvider.pets.add(pet);
-        } else {
-            DataProvider.pets.set(mSelectedPetIndex, pet);
-        }
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra(CatalogActivity.EXTRA_PET, newPet);
+        setResult(RESULT_OK, returnIntent);
+        finish();
     }
 }
