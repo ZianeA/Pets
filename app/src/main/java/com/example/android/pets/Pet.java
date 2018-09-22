@@ -9,6 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 
 public class Pet implements Parcelable {
 
+    private int id;
     private String name;
     private String breed;
     private int gender;
@@ -21,6 +22,7 @@ public class Pet implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int i) {
+        out.writeInt(id);
         out.writeString(name);
         out.writeString(breed);
         out.writeInt(gender);
@@ -53,7 +55,8 @@ public class Pet implements Parcelable {
      * @param gender the gender of the pet (Male, Female, Unknown)
      * @param weight the weight of the pet in kilograms
      */
-    public Pet(String name, String breed, @Gender int gender, int weight) {
+    public Pet(int id, String name, String breed, @Gender int gender, int weight) {
+        this.id = id;
         this.name = name;
         this.breed = breed;
         this.gender = gender;
@@ -64,11 +67,20 @@ public class Pet implements Parcelable {
 
     }
 
-    public Pet(Parcel in){
+    public Pet(Parcel in) {
+        id = in.readInt();
         name = in.readString();
         breed = in.readString();
         gender = in.readInt();
         weight = in.readInt();
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {

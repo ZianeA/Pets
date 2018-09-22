@@ -3,7 +3,6 @@ package com.example.android.pets;
 import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,14 +10,14 @@ import android.widget.TextView;
 
 import com.example.android.pets.data.PetContract;
 
-import java.util.List;
+import static com.example.android.pets.data.PetContract.*;
 
 public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterViewHolder> {
 
     private Cursor mData;
     private OnPetListItemClickListener mClickListener;
 
-    public PetsAdapter(Cursor data, OnPetListItemClickListener clickListener) {
+    PetsAdapter(Cursor data, OnPetListItemClickListener clickListener) {
         this.mData = data;
         this.mClickListener = clickListener;
     }
@@ -48,7 +47,7 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
         private TextView mName;
         private TextView mBreed;
 
-        public PetsAdapterViewHolder(View itemView) {
+        PetsAdapterViewHolder(View itemView) {
             super(itemView);
             mName = itemView.findViewById(R.id.tv_name);
             mBreed = itemView.findViewById(R.id.tv_breed);
@@ -58,28 +57,47 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
         private void bind(int position) {
             if (!mData.moveToPosition(position)) return;
 
-            int nameCol = mData.getColumnIndex(PetContract.PetsEntry.COLUMN_NAME_NAME);
-            int breedCol = mData.getColumnIndex(PetContract.PetsEntry.COLUMN_NAME_BREED);
+            int nameCol = mData.getColumnIndex(PetsEntry.COLUMN_NAME);
+            int breedCol = mData.getColumnIndex(PetsEntry.COLUMN_BREED);
             mName.setText(mData.getString(nameCol));
             mBreed.setText(mData.getString(breedCol));
-            int idCol = mData.getColumnIndex(PetContract.PetsEntry.COLUMN_NAME_ID);
         }
 
         @Override
         public void onClick(View view) {
-            mClickListener.onClick(view, getLayoutPosition());
+            int position = getAdapterPosition();
+            Pet selectedPet = CursorToPet(mData, position);
+
+            if(selectedPet == null) return;
+
+            mClickListener.onClick(view, selectedPet, position);
         }
     }
 
+    private Pet CursorToPet(Cursor cursor, int position) {
+        if (cursor == null || !cursor.moveToPosition(position)) return null;
+
+        int id = cursor.getInt(cursor.getColumnIndex(PetsEntry._ID));
+        String name = cursor.getString(cursor.getColumnIndex(PetsEntry.COLUMN_NAME));
+        String breed = cursor.getString(cursor.getColumnIndex(PetsEntry.COLUMN_BREED));
+        int gender = cursor.getInt(cursor.getColumnIndex(PetsEntry.COLUMN_GENDER));
+        int weight = cursor.getInt(cursor.getColumnIndex(PetsEntry.COLUMN_WEIGHT));
+
+        return new Pet(id, name, breed, gender, weight);
+    }
+
     public interface OnPetListItemClickListener {
-        public void onClick(View view, int petIndex);
+        void onClick(View view, Pet selectedPet, int petIndex);
     }
 
     public void swapData(Cursor newData) {
+        if (mData == newData) return;
+
         if (mData != null) {
             mData.close();
         }
 
         mData = newData;
+        notifyDataSetChanged();
     }
 }

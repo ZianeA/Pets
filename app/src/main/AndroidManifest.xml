@@ -31,6 +31,10 @@
             </meta-data>
 
         </activity>
+        <provider
+            android:authorities="com.example.android.pets"
+            android:name=".data.PetProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

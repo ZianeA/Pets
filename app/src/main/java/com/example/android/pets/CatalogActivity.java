@@ -4,10 +4,11 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.CursorLoader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,26 +16,25 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 
-import com.example.android.pets.data.DataProvider;
+import com.example.android.pets.data.PetAsyncQueryHandler;
+import com.example.android.pets.data.PetDbHelper;
+import com.example.android.pets.data.PetProvider;
 
 import java.lang.ref.WeakReference;
 
 import static com.example.android.pets.data.PetContract.*;
 
-public class CatalogActivity extends AppCompatActivity {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String EXTRA_PET = "EXTRA_PET";
 
     private static final String TAG = CatalogActivity.class.getSimpleName();
-    private static final int EDIT_PET_REQUEST_CODE = 0;
-    private static final int ADD_PET_REQUEST_CODE = 1;
-    public static final String ORDER_BY = PetsEntry.COLUMN_NAME_ID + " DESC";
+    private static final int LOADER_PET_ID = 101;
 
     private PetsAdapter mAdapter;
-    private int mSelectedPetIndex;
-    private RecyclerView mRecyclerView;
-    private SQLiteDatabase mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,161 +51,27 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
 
-
-        mRecyclerView = findViewById(R.id.rv_pets);
+        getSupportLoaderManager().initLoader(LOADER_PET_ID, null, this);
+        RecyclerView mRecyclerView = findViewById(R.id.rv_pets);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        GetPetTask dbGetterTask = new GetPetTask(new WeakReference<CatalogActivity>(this));
-        PetDbHelper dbHelper = new PetDbHelper(this);
-        dbGetterTask.execute(dbHelper);
-    }
-
-    private static class GetPetTask extends AsyncTask<PetDbHelper, Void, Cursor> {
-
-        WeakReference<CatalogActivity> mCatalogActivityWeakReference;
-
-        public GetPetTask(WeakReference<CatalogActivity> reference) {
-            mCatalogActivityWeakReference = reference;
-        }
-
-
-        @Override
-        protected Cursor doInBackground(PetDbHelper... petDbHelpers) {
-            if (petDbHelpers == null || petDbHelpers.length == 0) return null;
-
-            CatalogActivity catalogActivity = mCatalogActivityWeakReference.get();
-            if (catalogActivity == null) return null;
-
-            catalogActivity.mDatabase = petDbHelpers[0].getWritableDatabase();
-            return catalogActivity.mDatabase.query(PetsEntry.TABLE_NAME, null,
-                    null, null, null, null,
-                    ORDER_BY);
-        }
-
-        @Override
-        protected void onPostExecute(final Cursor cursor) {
-            super.onPostExecute(cursor);
-            final CatalogActivity catalogActivity = mCatalogActivityWeakReference.get();
-            if (catalogActivity == null || cursor == null) return;
-
-            catalogActivity.mAdapter = new PetsAdapter(cursor,
-                    new PetsAdapter.OnPetListItemClickListener() {
-                        @Override
-                        public void onClick(View view, int petIndex) {
-                            catalogActivity.mSelectedPetIndex = petIndex;
-                            cursor.moveToPosition(petIndex);
-                            Pet selectedPet = new Pet();
-
-                            int nameCol = cursor.getColumnIndex(PetsEntry.COLUMN_NAME_NAME);
-                            int breedCol = cursor.getColumnIndex(PetsEntry.COLUMN_NAME_BREED);
-                            int genderCol = cursor.getColumnIndex(PetsEntry.COLUMN_NAME_GENDER);
-                            int weightCol = cursor.getColumnIndex(PetsEntry.COLUMN_NAME_WEIGHT);
-
-                            selectedPet.setName(cursor.getString(nameCol));
-                            selectedPet.setBreed(cursor.getString(breedCol));
-                            selectedPet.setGender(cursor.getInt(genderCol));
-                            selectedPet.setWeight(cursor.getInt(weightCol));
-
-                            catalogActivity.editPet(selectedPet);
-                        }
-                    });
-            catalogActivity.mRecyclerView.setAdapter(catalogActivity.mAdapter);
-        }
-    }
-
-    private static class AddPetTask extends AsyncTask<Pet, Void, Cursor>{
-
-        WeakReference<CatalogActivity> mCatalogActivityWeakReference;
-
-        public AddPetTask(WeakReference<CatalogActivity> reference) {
-            mCatalogActivityWeakReference = reference;
-        }
-
-        @Override
-        protected Cursor doInBackground(Pet... pets) {
-            if(pets == null || pets.length == 0) return null;
-
-            ContentValues values = new ContentValues();
-            values.put(PetsEntry.COLUMN_NAME_NAME, pets[0].getName());
-            values.put(PetsEntry.COLUMN_NAME_BREED, pets[0].getBreed());
-            values.put(PetsEntry.COLUMN_NAME_GENDER, pets[0].getGender());
-            values.put(PetsEntry.COLUMN_NAME_WEIGHT, pets[0].getWeight());
-
-            CatalogActivity catalogActivity = mCatalogActivityWeakReference.get();
-            if(catalogActivity == null) return null;
-
-            catalogActivity.mDatabase.insert(PetsEntry.TABLE_NAME, null, values);
-//            SystemClock.sleep(9000);
-            return catalogActivity.mDatabase.query(PetsEntry.TABLE_NAME, null,
-                    null, null, null, null, ORDER_BY);
-        }
-
-        @Override
-        protected void onPostExecute(Cursor cursor) {
-            super.onPostExecute(cursor);
-            CatalogActivity catalogActivity = mCatalogActivityWeakReference.get();
-            if(catalogActivity == null || cursor == null) return;
-
-            catalogActivity.mAdapter.swapData(cursor);
-            catalogActivity.mAdapter.notifyItemInserted(0);
-            catalogActivity.mRecyclerView.smoothScrollToPosition(0);
-        }
-    }
-
-    //Add data to the database. This method should be executed only once, since any data added
-    //to the database is persistent.
-    private void addDummyData(PetDbHelper mDbHelper) {
-        SQLiteDatabase writableDb = mDbHelper.getWritableDatabase();
-
-        for (Pet p : DataProvider.pets) {
-            ContentValues values = new ContentValues();
-            values.put(PetsEntry.COLUMN_NAME_NAME, p.getName());
-            values.put(PetsEntry.COLUMN_NAME_BREED, p.getBreed());
-            values.put(PetsEntry.COLUMN_NAME_GENDER, p.getGender());
-            values.put(PetsEntry.COLUMN_NAME_WEIGHT, p.getWeight());
-            writableDb.insert(PetsEntry.TABLE_NAME, null, values);
-        }
+        mAdapter = new PetsAdapter(null, new PetsAdapter.OnPetListItemClickListener() {
+            @Override
+            public void onClick(View view, Pet selectedPet, int petIndex) {
+                editPet(selectedPet);
+            }
+        });
+        mRecyclerView.setAdapter(mAdapter);
     }
 
     private void editPet(Pet selectedPet) {
         Intent intent = new Intent(this, EditorActivity.class);
         intent.putExtra(EXTRA_PET, selectedPet);
-        startActivityForResult(intent, EDIT_PET_REQUEST_CODE);
+        startActivity(intent);
     }
 
     private void addPet() {
         Intent intent = new Intent(this, EditorActivity.class);
-        startActivityForResult(intent, ADD_PET_REQUEST_CODE);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (resultCode == RESULT_OK) {
-            if (!data.hasExtra(EXTRA_PET)) return;
-
-            Pet newPet = data.getParcelableExtra(EXTRA_PET);
-
-            if (requestCode == ADD_PET_REQUEST_CODE) {
-                AddPetTask addPetTask = new AddPetTask(
-                        new WeakReference<>(this));
-                addPetTask.execute(newPet);
-            } else if (requestCode == EDIT_PET_REQUEST_CODE) {
-
-            }
-        } else if (resultCode == EditorActivity.RESULT_DELETE_PET) {
-
-        }
-//        if (requestCode == EDIT_PET_REQUEST_CODE) {
-//            if (resultCode == RESULT_OK) {
-//                mAdapter.notifyItemChanged(mSelectedPetIndex);
-//            } else if (resultCode == EditorActivity.RESULT_DELETE_PET) {
-//                mAdapter.notifyItemRemoved(mSelectedPetIndex);
-//            }
-//        } else if (requestCode == ADD_PET_REQUEST_CODE && resultCode == RESULT_OK) {
-//            int lastItemIndex = mAdapter.getItemCount() - 1;
-//            mAdapter.notifyItemInserted(lastItemIndex);
-//        }
+        startActivity(intent);
     }
 
     @Override
@@ -218,15 +84,78 @@ public class CatalogActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_add_dummy_data:
+                addDummyData();
+                return true;
+            case R.id.action_delete_all_pets:
+                deleteAllPets();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+    private void deleteAllPets() {
+        PetAsyncQueryHandler deleteHandler = new PetAsyncQueryHandler(getContentResolver());
+        deleteHandler.startDelete(0, null, PetsEntry.CONTENT_URI, null,
+                null);
+    }
+
+    private void addDummyData() {
+        PetAsyncQueryHandler insertHandler = new PetAsyncQueryHandler(getContentResolver());
+
+        for (int i = 0; i < 200; i++) {
+            ContentValues values = new ContentValues();
+            values.put(PetsEntry.COLUMN_NAME, "Pet " + "#" + i);
+            values.put(PetsEntry.COLUMN_BREED, "Breed " + "#" + i);
+            values.put(PetsEntry.COLUMN_GENDER, Pet.GENDER_MALE);
+            values.put(PetsEntry.COLUMN_WEIGHT, i);
+            insertHandler.startInsert(0, null, PetsEntry.CONTENT_URI, values);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @NonNull
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
+        CursorLoader loader;
+
+        switch (id) {
+            case LOADER_PET_ID:
+                loader = new CursorLoader(this, PetsEntry.CONTENT_URI, null,
+                        null, null, null);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid loader id: " + id);
+        }
+
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
+        int id = loader.getId();
+
+        switch (id) {
+            case LOADER_PET_ID:
+                mAdapter.swapData(data);
+                break;
+        }
+    }
+
+    @Override
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
+        int id = loader.getId();
+
+        switch (id) {
+            case LOADER_PET_ID:
+                mAdapter.swapData(null);
+                break;
+        }
     }
 }

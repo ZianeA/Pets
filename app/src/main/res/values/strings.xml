@@ -9,6 +9,8 @@
     <string name="weight_unit_kg">kg</string>
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
+    <string name="action_add_dummy_data">Add Dummy Data</string>
+    <string name="action_delete_all_pets">Delete All Pets</string>
 
     <string-array name="pet_gender">
         <item>Male</item>

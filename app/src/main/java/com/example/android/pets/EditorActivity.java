@@ -1,5 +1,7 @@
 package com.example.android.pets;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
@@ -10,18 +12,18 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import com.example.android.pets.data.DataProvider;
+import com.example.android.pets.data.PetAsyncQueryHandler;
+
+import static com.example.android.pets.data.PetContract.*;
 
 public class EditorActivity extends AppCompatActivity {
-
-    public static final int RESULT_DELETE_PET = 405;
 
     private static final String TAG = EditorActivity.class.getSimpleName();
     private static final String ADD_PET_TITLE = "Add Pet";
     private static final String EDIT_PET_TITLE = "Edit Pet";
 
     private boolean isAddPet;
-    private int mSelectedPetIndex;
+    private Pet mSelectedPet;
     private EditText mNameEditText;
     private EditText mBreedEditText;
     private EditText mWeightEditText;
@@ -45,26 +47,26 @@ public class EditorActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         if (intent.hasExtra(CatalogActivity.EXTRA_PET)) {
-            editPet();
+            setupEditPet();
         } else {
-            addPet();
+            setupAddPet();
         }
     }
 
-    private void addPet() {
+    private void setupAddPet() {
         isAddPet = true;
         setTitle(ADD_PET_TITLE);
     }
 
-    private void editPet() {
+    private void setupEditPet() {
         setTitle(EDIT_PET_TITLE);
-        Pet selectedPet = getIntent().
+        mSelectedPet = getIntent().
                 getParcelableExtra(CatalogActivity.EXTRA_PET);
 
-        mNameEditText.setText(selectedPet.getName());
-        mBreedEditText.setText(selectedPet.getBreed());
-        mWeightEditText.setText(String.valueOf(selectedPet.getWeight()));
-        mGenderSpinner.setSelection(selectedPet.getGender());
+        mNameEditText.setText(mSelectedPet.getName());
+        mBreedEditText.setText(mSelectedPet.getBreed());
+        mWeightEditText.setText(String.valueOf(mSelectedPet.getWeight()));
+        mGenderSpinner.setSelection(mSelectedPet.getGender());
     }
 
     @Override
@@ -90,10 +92,10 @@ public class EditorActivity extends AppCompatActivity {
                 return true;
             case R.id.action_save:
                 savePet();
+                finish();
                 return true;
             case R.id.action_delete:
                 deletePet();
-                setResult(RESULT_DELETE_PET);
                 finish();
                 return true;
         }
@@ -101,7 +103,10 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void deletePet() {
-        DataProvider.pets.remove(mSelectedPetIndex);
+        PetAsyncQueryHandler deleteHandler = new PetAsyncQueryHandler(getContentResolver());
+        deleteHandler.startDelete(0, null, ContentUris.withAppendedId(
+                PetsEntry.CONTENT_URI, mSelectedPet.getId()),
+                null, null);
     }
 
     private void savePet() {
@@ -111,9 +116,20 @@ public class EditorActivity extends AppCompatActivity {
         newPet.setGender(mGenderSpinner.getSelectedItemPosition());
         newPet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
 
-        Intent returnIntent = new Intent();
-        returnIntent.putExtra(CatalogActivity.EXTRA_PET, newPet);
-        setResult(RESULT_OK, returnIntent);
-        finish();
+        PetAsyncQueryHandler queryHandler = new PetAsyncQueryHandler(getContentResolver());
+
+        ContentValues values = new ContentValues();
+        values.put(PetsEntry.COLUMN_NAME, newPet.getName());
+        values.put(PetsEntry.COLUMN_BREED, newPet.getBreed());
+        values.put(PetsEntry.COLUMN_GENDER, newPet.getGender());
+        values.put(PetsEntry.COLUMN_WEIGHT, newPet.getWeight());
+
+        if (isAddPet) {
+            queryHandler.startInsert(0, null, PetsEntry.CONTENT_URI, values);
+        } else {
+            queryHandler.startUpdate(0, null, ContentUris.withAppendedId(
+                    PetsEntry.CONTENT_URI, mSelectedPet.getId()),
+                    values, null, null);
+        }
     }
 }
