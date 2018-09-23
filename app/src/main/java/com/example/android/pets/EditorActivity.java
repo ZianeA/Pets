@@ -42,6 +42,7 @@ public class EditorActivity extends AppCompatActivity {
         }
 
         mGenderSpinner = findViewById(R.id.spinner_gender);
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_editor);
         Intent intent = getIntent();
 
         if (intent.hasExtra(CatalogActivity.EXTRA_PET)) {
@@ -54,6 +55,7 @@ public class EditorActivity extends AppCompatActivity {
     private void setupAddPet() {
         isAddPet = true;
         setTitle(ADD_PET_TITLE);
+        mBinding.setPet(new Pet());
     }
 
     private void setupEditPet() {
@@ -61,7 +63,6 @@ public class EditorActivity extends AppCompatActivity {
         mSelectedPet = getIntent().
                 getParcelableExtra(CatalogActivity.EXTRA_PET);
 
-        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_editor);
         mBinding.setPet(mSelectedPet);
     }
 
