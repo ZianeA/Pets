@@ -21,9 +21,5 @@ public final class PetContract {
         public static final String COLUMN_WEIGHT = "weight";
 
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_PETS);
-
-        public static final int GENDER_MALE = 0;
-        public static final int GENDER_FEMALE = 1;
-        public static final int GENDER_UNKNOWN = 2;
     }
 }

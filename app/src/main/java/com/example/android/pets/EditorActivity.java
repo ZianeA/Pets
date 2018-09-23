@@ -3,16 +3,19 @@ package com.example.android.pets;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.example.android.pets.data.PetAsyncQueryHandler;
+import com.example.android.pets.databinding.ActivityEditorBinding;
 
 import static com.example.android.pets.data.PetContract.*;
 
@@ -24,10 +27,8 @@ public class EditorActivity extends AppCompatActivity {
 
     private boolean isAddPet;
     private Pet mSelectedPet;
-    private EditText mNameEditText;
-    private EditText mBreedEditText;
-    private EditText mWeightEditText;
     private Spinner mGenderSpinner;
+    ActivityEditorBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +40,7 @@ public class EditorActivity extends AppCompatActivity {
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
-        mNameEditText = findViewById(R.id.et_name);
-        mBreedEditText = findViewById(R.id.et_breed);
-        mWeightEditText = findViewById(R.id.et_measurement);
         mGenderSpinner = findViewById(R.id.spinner_gender);
-
         Intent intent = getIntent();
 
         if (intent.hasExtra(CatalogActivity.EXTRA_PET)) {
@@ -63,9 +60,8 @@ public class EditorActivity extends AppCompatActivity {
         mSelectedPet = getIntent().
                 getParcelableExtra(CatalogActivity.EXTRA_PET);
 
-        mNameEditText.setText(mSelectedPet.getName());
-        mBreedEditText.setText(mSelectedPet.getBreed());
-        mWeightEditText.setText(String.valueOf(mSelectedPet.getWeight()));
+        mBinding = DataBindingUtil.setContentView(this, R.layout.activity_editor);
+        mBinding.setPet(mSelectedPet);
         mGenderSpinner.setSelection(mSelectedPet.getGender());
     }
 
@@ -110,19 +106,15 @@ public class EditorActivity extends AppCompatActivity {
     }
 
     private void savePet() {
-        Pet newPet = new Pet();
-        newPet.setName(mNameEditText.getText().toString());
-        newPet.setBreed(mBreedEditText.getText().toString());
-        newPet.setGender(mGenderSpinner.getSelectedItemPosition());
-        newPet.setWeight(Integer.decode(mWeightEditText.getText().toString()));
-
         PetAsyncQueryHandler queryHandler = new PetAsyncQueryHandler(getContentResolver());
 
         ContentValues values = new ContentValues();
+        Pet newPet = mBinding.getPet();
         values.put(PetsEntry.COLUMN_NAME, newPet.getName());
         values.put(PetsEntry.COLUMN_BREED, newPet.getBreed());
-        values.put(PetsEntry.COLUMN_GENDER, newPet.getGender());
+        values.put(PetsEntry.COLUMN_GENDER, mGenderSpinner.getSelectedItemPosition());
         values.put(PetsEntry.COLUMN_WEIGHT, newPet.getWeight());
+        Log.d(TAG, "savePet: " + mGenderSpinner.getSelectedItemPosition());
 
         if (isAddPet) {
             queryHandler.startInsert(0, null, PetsEntry.CONTENT_URI, values);

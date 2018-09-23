@@ -1,13 +1,20 @@
 package com.example.android.pets;
 
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
+import android.databinding.InverseMethod;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
 
+import com.example.android.pets.BR;
+import com.google.common.primitives.Ints;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
-public class Pet implements Parcelable {
+public class Pet extends BaseObservable implements Parcelable  {
 
     private int id;
     private String name;
@@ -75,44 +82,63 @@ public class Pet implements Parcelable {
         weight = in.readInt();
     }
 
+    @Bindable
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
+        notifyPropertyChanged(BR.id);
     }
 
+    @Bindable
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+        notifyPropertyChanged(BR.name);
     }
 
+    @Bindable
     public String getBreed() {
         return breed;
     }
 
     public void setBreed(String breed) {
         this.breed = breed;
+        notifyPropertyChanged(BR.breed);
     }
 
-    @Gender
+    @Gender @Bindable
     public int getGender() {
         return gender;
     }
 
     public void setGender(@Gender int gender) {
         this.gender = gender;
+        notifyPropertyChanged(BR.gender);
     }
 
+    @Bindable
     public int getWeight() {
         return weight;
     }
 
     public void setWeight(int weight) {
         this.weight = weight;
+        notifyPropertyChanged(BR.weight);
+    }
+
+    @InverseMethod("convertIntToString")
+    public static int convertStringToInt(String value) {
+        Integer parsed = Ints.tryParse(value);
+        return parsed == null ? 0 : parsed;
+    }
+
+    public static String convertIntToString(int value) {
+        return String.valueOf(value);
     }
 }

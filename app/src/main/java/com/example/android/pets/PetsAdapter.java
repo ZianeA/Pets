@@ -8,7 +8,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.android.pets.data.PetContract;
+import com.example.android.pets.databinding.ActivityEditorBinding;
+import com.example.android.pets.databinding.PetListItemBinding;
+
+import java.util.zip.Inflater;
 
 import static com.example.android.pets.data.PetContract.*;
 
@@ -16,6 +19,7 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
 
     private Cursor mData;
     private OnPetListItemClickListener mClickListener;
+    private LayoutInflater mInflater;
 
     PetsAdapter(Cursor data, OnPetListItemClickListener clickListener) {
         this.mData = data;
@@ -25,10 +29,12 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
     @NonNull
     @Override
     public PetsAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.pet_list_item, parent, false);
+        if (mInflater == null) mInflater = LayoutInflater.from(parent.getContext());
 
-        return new PetsAdapterViewHolder(view);
+        PetListItemBinding binding = PetListItemBinding.inflate(mInflater, parent,
+                false);
+
+        return new PetsAdapterViewHolder(binding);
     }
 
     @Override
@@ -44,23 +50,21 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
     public class PetsAdapterViewHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
 
-        private TextView mName;
-        private TextView mBreed;
+        PetListItemBinding mBinding;
 
-        PetsAdapterViewHolder(View itemView) {
-            super(itemView);
-            mName = itemView.findViewById(R.id.tv_name);
-            mBreed = itemView.findViewById(R.id.tv_breed);
+        PetsAdapterViewHolder(PetListItemBinding binding) {
+            super(binding.getRoot());
+
+            mBinding = binding;
             itemView.setOnClickListener(this);
         }
 
         private void bind(int position) {
-            if (!mData.moveToPosition(position)) return;
+            Pet pet = CursorToPet(mData, position);
 
-            int nameCol = mData.getColumnIndex(PetsEntry.COLUMN_NAME);
-            int breedCol = mData.getColumnIndex(PetsEntry.COLUMN_BREED);
-            mName.setText(mData.getString(nameCol));
-            mBreed.setText(mData.getString(breedCol));
+            if (pet == null) return;
+
+            mBinding.setPet(pet);
         }
 
         @Override
@@ -68,7 +72,7 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
             int position = getAdapterPosition();
             Pet selectedPet = CursorToPet(mData, position);
 
-            if(selectedPet == null) return;
+            if (selectedPet == null) return;
 
             mClickListener.onClick(view, selectedPet, position);
         }
@@ -98,6 +102,7 @@ public class PetsAdapter extends RecyclerView.Adapter<PetsAdapter.PetsAdapterVie
         }
 
         mData = newData;
+
         notifyDataSetChanged();
     }
 }
