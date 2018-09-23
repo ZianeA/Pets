@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -62,7 +63,6 @@ public class EditorActivity extends AppCompatActivity {
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_editor);
         mBinding.setPet(mSelectedPet);
-        mGenderSpinner.setSelection(mSelectedPet.getGender());
     }
 
     @Override
@@ -112,7 +112,7 @@ public class EditorActivity extends AppCompatActivity {
         Pet newPet = mBinding.getPet();
         values.put(PetsEntry.COLUMN_NAME, newPet.getName());
         values.put(PetsEntry.COLUMN_BREED, newPet.getBreed());
-        values.put(PetsEntry.COLUMN_GENDER, mGenderSpinner.getSelectedItemPosition());
+        values.put(PetsEntry.COLUMN_GENDER, newPet.getGender());
         values.put(PetsEntry.COLUMN_WEIGHT, newPet.getWeight());
         Log.d(TAG, "savePet: " + mGenderSpinner.getSelectedItemPosition());
 

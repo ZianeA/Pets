@@ -83,7 +83,7 @@
             android:layout_marginTop="8dp"
             android:ems="10"
             android:entries="@array/pet_gender"
-            android:inputType="textPersonName"
+            android:selection="@={pet.gender}"
             app:layout_constraintStart_toStartOf="@+id/et_breed"
             app:layout_constraintTop_toBottomOf="@+id/et_breed" />
 
